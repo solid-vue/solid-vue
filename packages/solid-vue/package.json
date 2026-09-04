@@ -1,0 +1,12 @@
+{
+  "name": "solid-vue-cli",
+  "version": "0.1.0",
+  "type": "module",
+  "files": ["bin", "addons"],
+  "bin": {
+    "solid-vue": "./bin/cli.js"
+  },
+  "dependencies": {
+    "chalk": "^6.0.0"
+  }
+}

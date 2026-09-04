@@ -1,0 +1,48 @@
+{
+  "name": "solid-vue",
+  "version": "0.0.3",
+  "type": "module",
+  "license": "MIT",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./client": {
+      "types": "./dist/app.d.ts",
+      "import": "./dist/app.mjs"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "unbuild"
+  },
+  "dependencies": {
+    "h3": "^2.0.1-rc.29",
+    "unplugin-vue-router": "^0.8.0"
+  },
+  "peerDependencies": {
+    "@vitejs/plugin-vue": "^6.0.0",
+    "pinia": "^2.1.0",
+    "vite": "^8.2.2",
+    "vue": "^3.4.0",
+    "vue-router": "^4.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.8",
+    "pinia": "^2.1.0",
+    "typescript": "^5.0.0",
+    "unbuild": "^3.6.1",
+    "vite": "^8.2.2",
+    "vue": "^3.4.0",
+    "vue-router": "^4.0.0"
+  }
+}

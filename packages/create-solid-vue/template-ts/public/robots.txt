@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+# Add Allow/Disalow page here
+
+# Add your real sitemap URL if your project has been deployed, example:
+# Sitemap: https://example.com/sitemap.xml

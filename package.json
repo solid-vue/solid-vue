@@ -1,0 +1,10 @@
+{
+  "name": "solid-vue-workspace",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/node": "^26.4.0"
+  }
+}

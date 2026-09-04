@@ -1,0 +1,20 @@
+{
+  "name": "solid-vue-app",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "solid-vue": "*",
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vite": "^8.2.2",
+    "vue-tsc": "^2.0.0"
+  }
+}
