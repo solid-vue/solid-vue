@@ -84,7 +84,7 @@ npx solid-vue add pinia
 npx solid-vue add vitest
 ```
 
-See the [full add-on list](https://solid-vue.tech/docs/en/addons) in the docs.
+See the [[full add-on list](https://docs.solid-vue.tech/guide/addons) in the docs.
 
 ## Requirements
 
@@ -93,7 +93,7 @@ See the [full add-on list](https://solid-vue.tech/docs/en/addons) in the docs.
 
 ## Documentation
 
-Full documentation: **[solid-vue.tech/docs/en/](https://solid-vue.tech/docs/en/)**
+Full documentation: **[https://solid-vue.tech/docs/en/](https://docs.solid-vue.tech/)**
 
 ## License
 
