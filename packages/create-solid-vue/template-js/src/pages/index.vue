@@ -30,7 +30,7 @@ onMounted(() => {
         
         <div class="actions">
           <a href="https://solid-vue.tech/" class="btn btn-primary" target="_blank" rel="noopener">Get Started</a>
-          <a href="https://github.com/joniilmanfahmi00-collab" class="btn btn-secondary" target="_blank" rel="noopener">View on GitHub</a>
+          <a href="https://github.com/solid-vue/solid-vue" class="btn btn-secondary" target="_blank" rel="noopener">View on GitHub</a>
         </div>
       </div>
 

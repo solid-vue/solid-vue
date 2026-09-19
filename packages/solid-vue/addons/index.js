@@ -9,6 +9,11 @@ import ofetch from './ofetch.js'
 import i18n from './i18n.js'
 import lint from './lint.js'
 import auth from './auth.js'
+import drizzle from './drizzle.js'
+import decimal from './decimal.js'
+import chartist from './chartist.js'
+import pdfLib from './pdf-lib.js'
+import exceljs from './exceljs.js'
 
 export const addons = {
   tailwind,
@@ -22,4 +27,9 @@ export const addons = {
   i18n,
   lint,
   auth,
+  drizzle,
+  decimal,
+  chartist,
+  'pdf-lib': pdfLib,
+  exceljs,
 }

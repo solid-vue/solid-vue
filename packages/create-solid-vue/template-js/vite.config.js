@@ -3,6 +3,10 @@ import { solidVue } from 'solid-vue'
 
 export default defineConfig({
   plugins: [
-    solidVue({ mode: 'spa' })
+    solidVue({
+      mode: 'spa',
+      apiPrefix: '/api',
+      optimizeCWV: { fonts: true },
+    })
   ]
 })

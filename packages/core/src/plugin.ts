@@ -1,22 +1,68 @@
 import type { PluginOption } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import VueRouter from 'unplugin-vue-router/vite'
+import VueRouter from 'vue-router/vite'
 import { H3 } from 'h3'
 import { toNodeHandler } from 'h3/node'
 import fs from 'node:fs'
 import path from 'node:path'
+import { matchApiRoute } from './server-routing'
+import { generateServerEntry } from './generate-server-entry'
 
+/**
+ * Options for the Solid-Vue Vite plugin.
+ */
 export interface SolidVueOptions {
+  /**
+   * Rendering/build mode.
+   *
+   * `ssr` and `ssg` are not yet verified end-to-end in production —
+   * treat them as experimental. Stick to `'spa'` unless you're
+   * comfortable working through rough edges yourself.
+   *
+   * @default 'spa'
+   */
   mode?: 'spa' | 'ssr' | 'ssg'
+
+  /**
+   * Path prefix under which `src/server/api` routes are served.
+   *
+   * @default '/api'
+   */
   apiPrefix?: string
-  optimizeCWV?: boolean
+
+  /**
+   * Injects safe Core Web Vitals defaults into `index.html`
+   * (responsive viewport, `max-width: 100%` on images/video).
+   *
+   * Pass `{ fonts: true }` instead of `true` to additionally add
+   * `preconnect` hints for Google Fonts — opt-in, since not every
+   * project uses them.
+   *
+   * @default true
+   */
+  optimizeCWV?: boolean | { fonts?: boolean }
 }
 
+/**
+ * The Solid-Vue Vite plugin — wires up file-based page routing
+ * (via Vue Router), file-based API routing (via h3), and a handful
+ * of safe defaults.
+ *
+ * @example
+ * ```ts
+ * import { defineConfig } from 'vite'
+ * import { solidVue } from 'solid-vue'
+ *
+ * export default defineConfig({
+ *   plugins: [solidVue({ mode: 'spa' })]
+ * })
+ * ```
+ */
 export function solidVue(options: SolidVueOptions = {}): PluginOption[] {
   const mode = options.mode || 'spa'
   const apiPrefix = options.apiPrefix || '/api'
   const optimizeCWV = options.optimizeCWV ?? true
-
+  let resolvedCommand: string
   const apiApp = new H3()
 
   apiApp.get('/ping', () => {
@@ -30,60 +76,69 @@ export function solidVue(options: SolidVueOptions = {}): PluginOption[] {
     transformIndexHtml(html) {
       if (!optimizeCWV) return html
 
+      const wantsFonts = typeof optimizeCWV === 'object' && optimizeCWV.fonts
+      const fontPreconnect = wantsFonts
+        ? `
+      <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>`
+        : ''
+
       return html.replace(
         '</head>',
         `
-    <!-- 🚀 Solid-Vue CWV Optimizations 🚀 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <style>
-      @font-face { font-display: swap; }
-      img, video { max-width: 100%; height: auto; }
-    </style>
-  </head>`
+      <!-- 🚀 Solid-Vue CWV Optimizations 🚀 -->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />${fontPreconnect}
+      <style>
+        @font-face { font-display: swap; }
+        img, video { max-width: 100%; height: auto; }
+      </style>
+    </head>`
       )
     },
 
     config(_userConfig, { command }) {
-    return {
-      optimizeDeps: {
-        exclude: ['solid-vue']
-      },
-      server: {
-        hmr: {
-          host: 'localhost'
+      resolvedCommand = command
+      return {
+        optimizeDeps: {
+          exclude: ['solid-vue']
+        },
+        server: {
+          ws: {
+            host: 'localhost'
+          }
+        },
+        build: {
+          outDir: mode === 'ssg' ? 'dist/static' : 'dist',
         }
-      },
-      build: {
-        outDir: mode === 'ssg' ? 'dist/static' : 'dist',
       }
-    }
-  },
+    },
 
     configureServer(server) {
       server.middlewares.use(apiPrefix, async (req, res, next) => {
         const rawPath = req.url?.split('?')[0] || '/'
-
         const urlPath = rawPath === '/' ? '/index' : rawPath
         const apiDir = path.resolve(server.config.root, 'src/server/api')
+        const method = req.method || 'GET'
 
-        const filePathTs = path.join(apiDir, `${urlPath}.ts`)
-        const filePathJs = path.join(apiDir, `${urlPath}.js`)
-        const indexPathTs = path.join(apiDir, urlPath, 'index.ts')
-        const indexPathJs = path.join(apiDir, urlPath, 'index.js')
+        const match = matchApiRoute(apiDir, urlPath, method)
 
-        let targetFile = ''
-        if (fs.existsSync(filePathTs)) targetFile = filePathTs
-        else if (fs.existsSync(filePathJs)) targetFile = filePathJs
-        else if (fs.existsSync(indexPathTs)) targetFile = indexPathTs
-        else if (fs.existsSync(indexPathJs)) targetFile = indexPathJs
-
-        if (targetFile) {
+        if (match) {
           try {
-            const module = await server.ssrLoadModule(targetFile)
+            const module = await server.ssrLoadModule(match.filePath)
+
+            if (typeof module.default !== 'function') {
+              const relPath = path.relative(server.config.root, match.filePath)
+              console.error(`[solid-vue] ${relPath} tidak mengekspor default function. Cek "export default defineEventHandler(...)".`)
+              res.statusCode = 500
+              res.end(`Solid-Vue: ${relPath} tidak mengekspor handler yang valid.`)
+              return
+            }
+
             const tempApp = new H3()
-            tempApp.use('/**', module.default)
+            tempApp.use('/**', (event) => {
+              event.context.params = match.params
+              return module.default(event)
+            })
             await toNodeHandler(tempApp)(req, res)
             return
           } catch (error) {
@@ -98,6 +153,16 @@ export function solidVue(options: SolidVueOptions = {}): PluginOption[] {
 
         await toNodeHandler(apiApp)(req, res)
       })
+    },
+
+    closeBundle() {
+      if (resolvedCommand !== 'build') return
+      const apiDir = path.resolve(process.cwd(), 'src/server/api')
+      const outDir = mode === 'ssg' ? 'dist/static' : 'dist'
+      if (!fs.existsSync(outDir)) return
+      const code = generateServerEntry(apiDir, outDir)
+      fs.writeFileSync(path.join(outDir, 'server-entry.mjs'), code)
+      console.log('[solid-vue] Generated ' + path.join(outDir, 'server-entry.mjs'))
     }
   }
 

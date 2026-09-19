@@ -1,6 +1,6 @@
 {
   "name": "create-solid-vue",
-  "version": "0.1.3",
+  "version": "0.1.6",
   "type": "module",
   "bin": {
     "create-solid-vue": "./bin/cli.js"

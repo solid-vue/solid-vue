@@ -1,11 +1,11 @@
-// packages/core/src/server.ts
 export { 
   defineEventHandler, 
   readBody, 
   getQuery, 
+  getRouterParam,
   setCookie, 
   getCookie, 
   createError,
   sendRedirect,
-  useSession,
+  useSession
 } from 'h3'
