@@ -2,6 +2,8 @@
 
 A lightweight Vue + Vite framework for small and growing businesses. File-based routing, a built-in server layer powered by [h3](https://github.com/h3js/h3), and zero extra config to wire together.
 
+https://github.com/user-attachments/assets/fe99f8ac-5f87-4433-afbc-5aa31406522e
+
 ## Features
 
 - **File-based routing** — every file in `src/pages` becomes a route automatically, via [`unplugin-vue-router`](https://github.com/posva/unplugin-vue-router).
